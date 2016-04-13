@@ -3,7 +3,7 @@ var bs = require('browser-sync').create();
 var debug = require('debug')('metalsmith-browser-sync');
 
 var PLUGIN_NAME = 'browser-sync';
-function browserSyncPlugin(options, callback){
+function browserSyncPlugin(options, callback, rebuildcb){
     function plugin(files, metalsmith, done) {
         // first time through remove ourselves, since we will be continously building
         // and we only need one browser-sync server active
@@ -24,10 +24,11 @@ function browserSyncPlugin(options, callback){
             }
         });
 
-        function rebuild() {
+        function rebuild(event, file) {
             if (!bs.paused) {
                 bs.pause();
 
+                if(rebuildcb) rebuildcb(event, file);
                 metalsmith.build(function(err) {
                     var buildMessage = err ? err : 'Build successful';
                     debug(buildMessage);
